@@ -1,0 +1,8 @@
+[package]
+name = "route-audio"
+version = "0.1.0"
+authors = ["Andreas Fischer <home@deviru.de>"]
+
+[dependencies]
+winapi = { git = "https://github.com/Vengarioth/winapi-rs.git", branch = "dev", features = ["objbase", "combaseapi", "mmdeviceapi", "audioclient", "audiosessiontypes", "mmreg", "winbase", "errhandlingapi"] }
+kernel32-sys = "0.2.2"
