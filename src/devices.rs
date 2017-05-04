@@ -2,15 +2,13 @@ use std::io::Error as IoError;
 use std::io::ErrorKind;
 use std::mem;
 use std::ptr;
-use std::os::raw::{c_uint, c_void};
-use std::ffi::{CStr, OsString};
 use winapi::um::*;
-use winapi::um::winnt::{LPWSTR};
 use winapi::Interface;
 use winapi::shared::wtypes::{PROPERTYKEY};
 use winapi::shared::minwindef::{UINT};
 use winapi::shared::guiddef::{GUID};
 
+use ::audio_client::AudioClient;
 use util::check_result;
 
 pub enum DataFlow {
@@ -57,7 +55,7 @@ fn from_wide_ptr(ptr: *const u16) -> String {
 }
 
 impl PropertyVariantData {
-    pub unsafe fn as_LPWSTR(&self) -> String {
+    pub unsafe fn as_lpwstr(&self) -> String {
         let x = self as *const _;  // take a raw pointer to the struct
         let x = x as *const u32;    // cast the pointer from struct type to u32
         let x = *x;                 // dereference the pointer (x is now u32)
@@ -75,6 +73,16 @@ impl Device {
 
     pub fn release(&self) {
         unsafe { (*self.pointer).Release(); }
+    }
+
+    pub fn activate(&self) -> Result<AudioClient, IoError> {
+        unsafe {
+            let mut audio_client_ptr = mem::uninitialized();
+            try!(check_result((*self.pointer).Activate(&audioclient::IID_IAudioClient, combaseapi::CLSCTX_ALL, ptr::null_mut(), &mut audio_client_ptr)));
+            assert!(!audio_client_ptr.is_null());
+            let audio_client = audio_client_ptr as *mut audioclient::IAudioClient;
+            Ok(AudioClient::new(audio_client))
+        }
     }
 
     pub fn get_name(&self) -> Result<String, IoError> {
@@ -99,7 +107,7 @@ impl Device {
             assert!(vt == 31); // assert that propertyvariant has the datatype we expect https://msdn.microsoft.com/en-us/library/windows/desktop/aa380072(v=vs.85).aspx
             let p = PropertyVariantData { data: variant.data };
 
-            Ok(p.as_LPWSTR())
+            Ok(p.as_lpwstr())
         }
     }
 }
