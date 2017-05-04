@@ -54,6 +54,16 @@ impl AudioClient {
         }
     }
 
+    pub fn get_render_client(&self) -> Result<AudioRenderClient, IoError> {
+        unsafe {
+            let mut render_client_ptr = mem::uninitialized();
+            try!(check_result((*self.pointer).GetService(&audioclient::IID_IAudioRenderClient, &mut render_client_ptr)));
+            assert!(!render_client_ptr.is_null());
+            let render_client = render_client_ptr as *mut audioclient::IAudioRenderClient;
+            Ok(AudioRenderClient::new(render_client))
+        }
+    }
+
     pub fn get_capture_client(&self) -> Result<AudioCaptureClient, IoError> {
         unsafe {
             let mut capture_client_ptr = mem::uninitialized();
@@ -65,6 +75,33 @@ impl AudioClient {
     }
 }
 
+pub struct AudioRenderClient {
+    pointer: *mut audioclient::IAudioRenderClient,
+}
+
+impl AudioRenderClient {
+    pub fn new(pointer: *mut audioclient::IAudioRenderClient) -> AudioRenderClient {
+        AudioRenderClient {
+            pointer: pointer,
+        }
+    }
+
+    pub fn get_buffer(&self, frames_requested: usize) -> Result<*mut BYTE, IoError> {
+        unsafe {
+            let mut data = mem::uninitialized();
+            try!(check_result((*self.pointer).GetBuffer(frames_requested as UINT32, &mut data)));
+            Ok(data)
+        }
+    }
+
+    pub fn release_buffer(&self, frames_written: usize) -> Result<(), IoError> {
+        unsafe {
+            try!(check_result((*self.pointer).ReleaseBuffer(frames_written as UINT32, 0)));
+            Ok(())
+        }
+    }
+}
+
 pub struct AudioCaptureClient {
     pointer: *mut audioclient::IAudioCaptureClient,
 }
@@ -72,7 +109,7 @@ pub struct AudioCaptureClient {
 impl AudioCaptureClient {
     pub fn new(pointer: *mut audioclient::IAudioCaptureClient) -> AudioCaptureClient {
         AudioCaptureClient {
-            pointer: pointer
+            pointer: pointer,
         }
     }
 

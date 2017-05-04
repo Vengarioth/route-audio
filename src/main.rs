@@ -17,14 +17,10 @@ fn main() {
         }
     }
 
-    let mut capture_device = None;
     println!("Capture Devices:");
     let devices = device_enumerator.get_audio_endpoints(devices::DataFlow::Capture, devices::DeviceState::All).unwrap();
     for i in 0..devices.len().unwrap() {
         let device = devices.get_item(i).unwrap();
-        if i == 0 {
-            capture_device = Some(device.activate().unwrap());
-        }
 
         match device.get_name() {
             Ok(name) => println!("  device {} \"{}\"", i, name),
@@ -32,8 +28,17 @@ fn main() {
         }
     }
 
-    match capture_device {
-        Some(device) => run(device),
-        None => println!("No capture device found."),
+    let capture_device = device_enumerator.get_default_audio_endpoint(devices::DataFlow::Capture, devices::Role::Console).unwrap();
+    let render_device = device_enumerator.get_default_audio_endpoint(devices::DataFlow::Render, devices::Role::Console).unwrap();
+
+    match capture_device.get_name() {
+        Ok(name) => println!("using capture device \"{}\"", name),
+        Err(e) => println!("    could not find a name property ({})", e),
     }
+    match render_device.get_name() {
+        Ok(name) => println!("using render device \"{}\"", name),
+        Err(e) => println!("    could not find a name property ({})", e),
+    }
+
+    run(capture_device.activate().unwrap(), render_device.activate().unwrap());
 }

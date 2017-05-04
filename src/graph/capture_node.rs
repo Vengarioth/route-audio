@@ -3,12 +3,13 @@ use futures::{ Async, Poll };
 use futures::stream::Stream;
 use futures::task;
 use ::graph::audio_buffer::AudioBuffer;
+use ::graph::audio_format::AudioFormat;
 use ::audio_client::{AudioClient, AudioCaptureClient};
 
 pub struct CaptureNode {
     audio_client: AudioClient,
     audio_capture_client: AudioCaptureClient,
-    block_align: usize,
+    format: AudioFormat,
 }
 
 impl Stream for CaptureNode {
@@ -16,7 +17,7 @@ impl Stream for CaptureNode {
     type Error = IoError;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        let mut buffer = AudioBuffer::new();
+        let mut buffer = AudioBuffer::new(self.format);
 
         let mut next_packet_size = try!(self.audio_capture_client.get_next_packet_size());
 
@@ -27,11 +28,9 @@ impl Stream for CaptureNode {
             return Ok(Async::NotReady);
         }
         
-        println!("polled, {} events ready", next_packet_size);
-
         while next_packet_size != 0 {
             let (frames_available, buffer_pointer) = try!(self.audio_capture_client.get_buffer());
-            let bytes_to_read = self.block_align * frames_available;
+            let bytes_to_read = self.format.block_align as usize * frames_available;
 
             unsafe {
                 for i in 0..bytes_to_read {
@@ -51,16 +50,18 @@ impl Stream for CaptureNode {
 impl CaptureNode {
     pub fn new(audio_client: AudioClient) -> Result<CaptureNode, IoError> {
         let mix_format = try!(audio_client.get_mix_format());
-        let block_align = unsafe { (*mix_format).nBlockAlign as usize };
+        let format = unsafe { AudioFormat::from_wave_format_ex((*mix_format)) };
         try!(audio_client.initialize(mix_format));
         let audio_capture_client = try!(audio_client.get_capture_client());
 
         try!(audio_client.start());
 
+        println!("{:?}", format);
+
         Ok(CaptureNode {
             audio_client: audio_client,
             audio_capture_client: audio_capture_client,
-            block_align: block_align,
+            format: format,
         })
     }
 }

@@ -2,9 +2,13 @@ use std::io::Error as IoError;
 use futures::{ Async, AsyncSink, StartSend, Poll };
 use futures::sink::Sink;
 use ::graph::audio_buffer::AudioBuffer;
+use ::graph::audio_format::AudioFormat;
+use ::audio_client::{ AudioClient, AudioRenderClient };
 
 pub struct RenderNode {
-
+    audio_client: AudioClient,
+    audio_render_client: AudioRenderClient,
+    format: AudioFormat,
 }
 
 impl Sink for RenderNode {
@@ -13,7 +17,18 @@ impl Sink for RenderNode {
 
     fn start_send(&mut self, item: Self::SinkItem) -> StartSend<Self::SinkItem, Self::SinkError> {
         
-        println!("received");
+        let frames = item.get_frames_count();
+        let render_buffer_pointer = try!(self.audio_render_client.get_buffer(frames));
+
+        let raw = item.get_raw_data();
+
+        unsafe {
+            for i in 0..raw.len() {
+                (*(render_buffer_pointer.offset(i as isize))) = raw[i];
+            }
+        }
+
+        self.audio_render_client.release_buffer(frames);
 
         self.poll_complete();
         Ok(AsyncSink::Ready)
@@ -25,7 +40,20 @@ impl Sink for RenderNode {
 }
 
 impl RenderNode {
-    pub fn new() -> RenderNode {
-        RenderNode {}
+    pub fn new(audio_client: AudioClient) -> Result<RenderNode, IoError> {
+        let mix_format = try!(audio_client.get_mix_format());
+        let format = unsafe { AudioFormat::from_wave_format_ex((*mix_format)) };
+        try!(audio_client.initialize(mix_format));
+        let audio_render_client = try!(audio_client.get_render_client());
+        
+        try!(audio_client.start());
+
+        println!("{:?}", format);
+
+        Ok(RenderNode {
+            audio_client: audio_client,
+            audio_render_client: audio_render_client,
+            format: format,
+        })
     }
 }
