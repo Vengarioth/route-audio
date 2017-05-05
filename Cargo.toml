@@ -7,5 +7,7 @@ authors = ["Andreas Fischer <home@deviru.de>"]
 winapi = { git = "https://github.com/Vengarioth/winapi-rs.git", branch = "dev", features = ["objbase", "combaseapi", "mmdeviceapi", "audioclient", "audiosessiontypes", "mmreg", "winbase", "errhandlingapi", "coml2api", "setupapi", "winnt"] }
 kernel32-sys = "0.2.2"
 bytes = "0.4"
+byteorder = "1.0.0"
 futures = "0.1"
 tokio-core = "0.1"
+sample = { git = "https://github.com/RustAudio/sample.git", branch = "master" }

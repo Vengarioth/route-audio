@@ -17,18 +17,23 @@ impl Sink for RenderNode {
 
     fn start_send(&mut self, item: Self::SinkItem) -> StartSend<Self::SinkItem, Self::SinkError> {
         
+        println!("renderer:");
         let frames = item.get_frames_count();
-        let render_buffer_pointer = try!(self.audio_render_client.get_buffer(frames));
-
-        let raw = item.get_raw_data();
-
-        unsafe {
-            for i in 0..raw.len() {
-                (*(render_buffer_pointer.offset(i as isize))) = raw[i];
+        println!("  rendering {} frames", frames);
+        match self.audio_render_client.get_buffer(frames) {
+            Ok(render_buffer_pointer) => {
+                let raw = item.get_raw_data();
+                unsafe {
+                    for i in 0..raw.len() {
+                        (*(render_buffer_pointer.offset(i as isize))) = raw[i];
+                    }
+                }
+                self.audio_render_client.release_buffer(frames);
+            }
+            Err(e) => {
+                println!("  could not allocate buffer");
             }
         }
-
-        self.audio_render_client.release_buffer(frames);
 
         self.poll_complete();
         Ok(AsyncSink::Ready)
@@ -48,12 +53,14 @@ impl RenderNode {
         
         try!(audio_client.start());
 
-        println!("{:?}", format);
-
         Ok(RenderNode {
             audio_client: audio_client,
             audio_render_client: audio_render_client,
             format: format,
         })
+    }
+
+    pub fn get_format(&self) -> AudioFormat {
+        self.format
     }
 }

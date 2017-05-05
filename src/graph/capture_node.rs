@@ -28,6 +28,7 @@ impl Stream for CaptureNode {
             return Ok(Async::NotReady);
         }
         
+        println!("capturer:");
         while next_packet_size != 0 {
             let (frames_available, buffer_pointer) = try!(self.audio_capture_client.get_buffer());
             let bytes_to_read = self.format.block_align as usize * frames_available;
@@ -42,6 +43,7 @@ impl Stream for CaptureNode {
             try!(self.audio_capture_client.release_buffer(frames_available));
             next_packet_size = try!(self.audio_capture_client.get_next_packet_size());
         }
+        println!("  {} frames captured", buffer.get_frames_count());
 
         Ok(Async::Ready(Some(buffer)))
     }
@@ -56,12 +58,14 @@ impl CaptureNode {
 
         try!(audio_client.start());
 
-        println!("{:?}", format);
-
         Ok(CaptureNode {
             audio_client: audio_client,
             audio_capture_client: audio_capture_client,
             format: format,
         })
+    }
+
+    pub fn get_format(&self) -> AudioFormat {
+        self.format
     }
 }

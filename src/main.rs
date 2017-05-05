@@ -10,9 +10,18 @@ fn main() {
     let devices = device_enumerator.get_audio_endpoints(devices::DataFlow::Render, devices::DeviceState::All).unwrap();
     for i in 0..devices.len().unwrap() {
         let device = devices.get_item(i).unwrap();
+        let audio_client = device.activate().unwrap();
+        let format = unsafe{ graph::audio_format::AudioFormat::from_wave_format_ex(*audio_client.get_mix_format().unwrap()) };
 
         match device.get_name() {
-            Ok(name) => println!("  device {} \"{}\"", i, name),
+            Ok(name) => {
+                println!("  device {} \"{}\"", i, name);
+                println!("      channels: {}", format.channels);
+                println!("      samples_per_second: {}", format.samples_per_second);
+                println!("      average_bytes_per_second: {}", format.average_bytes_per_second);
+                println!("      block_align: {}", format.block_align);
+                println!("      bits_per_sample: {}", format.bits_per_sample);
+            }
             Err(e) => println!("    could not find a name property ({})", e),
         }
     }
@@ -21,9 +30,18 @@ fn main() {
     let devices = device_enumerator.get_audio_endpoints(devices::DataFlow::Capture, devices::DeviceState::All).unwrap();
     for i in 0..devices.len().unwrap() {
         let device = devices.get_item(i).unwrap();
+        let audio_client = device.activate().unwrap();
+        let format = unsafe{ graph::audio_format::AudioFormat::from_wave_format_ex(*audio_client.get_mix_format().unwrap()) };
 
         match device.get_name() {
-            Ok(name) => println!("  device {} \"{}\"", i, name),
+            Ok(name) => {
+                println!("  device {} \"{}\"", i, name);
+                println!("      channels: {}", format.channels);
+                println!("      samples_per_second: {}", format.samples_per_second);
+                println!("      average_bytes_per_second: {}", format.average_bytes_per_second);
+                println!("      block_align: {}", format.block_align);
+                println!("      bits_per_sample: {}", format.bits_per_sample);
+            }
             Err(e) => println!("    could not find a name property ({})", e),
         }
     }
