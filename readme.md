@@ -15,3 +15,9 @@ Currently route-audio is just a proof of concept, later a configuration tool wil
 * Replacement for virtual audio cable
 * Linux support
 * Mac support
+
+## TODO
+* use [wio](https://github.com/retep998/wio-rs) for COM pointers.
+* stop polling for new audio data, instead use windows notifications.
+* properly implement propsys queries
+* fix memory leaks at usage of `mem::uninitialized` where a call to `ole32::CoTaskMemFree` is expected.

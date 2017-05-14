@@ -3,8 +3,8 @@ use std::io::ErrorKind;
 use std::ptr;
 use winapi::um::*;
 
-use util::check_result;
-use devices::DeviceEnumerator;
+use ::util::check_result;
+use ::platform::windows::device_enumerator::DeviceEnumerator;
 
 pub struct Session {
     initialized: bool,
@@ -24,7 +24,7 @@ impl Session {
         self.initialized
     }
 
-    pub fn get_device_enumerator(&mut self) -> Result<DeviceEnumerator, IoError> {
+    pub fn get_device_enumerator(&self) -> Result<DeviceEnumerator, IoError> {
         if !self.initialized {
             return Err(IoError::new(ErrorKind::Other, "Session not or no longer initialized."));
         }
