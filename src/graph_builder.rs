@@ -1,10 +1,11 @@
 use ::devices::DeviceInformation;
+use ::graph::audio_format::AudioFormat;
 
 #[derive(Debug)]
 pub enum Node {
     Capture { id: u32, capture_device: String },
     Render { id: u32, render_device: String },
-    Resample { id: u32, from_channels: u32, to_channels: u32, from_hertz: u32, to_hertz: u32 },
+    Resample { id: u32, from: AudioFormat, to: AudioFormat },
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -50,14 +51,12 @@ impl GraphBuilder {
         NodeReference { id: id }
     }
 
-    pub fn add_resample_node(&mut self) -> NodeReference {
+    pub fn add_resample_node(&mut self, from_format: AudioFormat, to_format: AudioFormat) -> NodeReference {
         let id = self.get_next_id();
         self.nodes.push(Node::Resample {
             id: id.clone(),
-            from_channels: 0,
-            to_channels: 0,
-            from_hertz: 0,
-            to_hertz: 0,
+            from: from_format,
+            to: to_format,
         });
         NodeReference { id: id }
     }

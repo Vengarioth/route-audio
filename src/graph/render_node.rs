@@ -48,7 +48,7 @@ impl Sink for RenderNode {
 impl RenderNode {
     pub fn new(audio_client: AudioClient) -> Result<RenderNode, IoError> {
         let mix_format = try!(audio_client.get_mix_format());
-        let format = unsafe { AudioFormat::from_wave_format_ex((*mix_format)) };
+        let format = AudioFormat::from_wave_format_ex(mix_format);
         try!(audio_client.initialize(mix_format));
         let audio_render_client = try!(audio_client.get_render_client());
         

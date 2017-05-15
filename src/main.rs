@@ -24,11 +24,13 @@ fn main() {
     let mut graph_builder = graph_builder::GraphBuilder::new();
     let capture_node = graph_builder.add_capture_node(&capturing_device);
     let render_node = graph_builder.add_render_node(&rendering_device);
-    let resample_node = graph_builder.add_resample_node();
+    let resample_node = graph_builder.add_resample_node(capturing_device.audio_format, rendering_device.audio_format);
     graph_builder.connect(&capture_node, &resample_node);
     graph_builder.connect(&resample_node, &render_node);
 
     let graph = graph_builder.build();
 
-    router.run(graph);
+    router.run(graph).unwrap();
+
+    println!("end");
 }

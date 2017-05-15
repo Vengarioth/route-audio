@@ -53,7 +53,7 @@ impl Stream for CaptureNode {
 impl CaptureNode {
     pub fn new(audio_client: AudioClient) -> Result<CaptureNode, IoError> {
         let mix_format = try!(audio_client.get_mix_format());
-        let format = unsafe { AudioFormat::from_wave_format_ex((*mix_format)) };
+        let format = AudioFormat::from_wave_format_ex(mix_format);
         try!(audio_client.initialize(mix_format));
         let audio_capture_client = try!(audio_client.get_capture_client());
 

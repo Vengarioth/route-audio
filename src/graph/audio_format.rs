@@ -30,8 +30,8 @@ impl AudioFormat {
         }
     }
 
-    pub fn from_wave_format_ex(format: WAVEFORMATEX) -> AudioFormat {
-        
+    pub fn from_wave_format_ex(format: *const WAVEFORMATEX) -> AudioFormat {
+        let format = unsafe { *format };
         AudioFormat {
             format: match format.wFormatTag {
                 WAVE_FORMAT_EXTENSIBLE => WaveFormat::Extensible,
