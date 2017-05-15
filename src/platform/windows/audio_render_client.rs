@@ -8,6 +8,7 @@ use std::mem;
 use std::ptr;
 use ::util::check_result;
 
+#[derive(Debug)]
 pub struct AudioRenderClient {
     pointer: *mut audioclient::IAudioRenderClient,
 }

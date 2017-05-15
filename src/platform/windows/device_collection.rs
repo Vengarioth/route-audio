@@ -10,6 +10,7 @@ use winapi::shared::guiddef::{GUID};
 use ::platform::windows::device::Device;
 use ::util::check_result;
 
+#[derive(Debug)]
 pub struct DeviceCollection {
     pointer: *mut mmdeviceapi::IMMDeviceCollection,
 }

@@ -38,6 +38,7 @@ impl PropertyVariantData {
     }
 }
 
+#[derive(Debug)]
 pub struct Device {
     pointer: *mut mmdeviceapi::IMMDevice,
 }

@@ -3,7 +3,8 @@ use futures::{ Async, AsyncSink, StartSend, Poll };
 use futures::sink::Sink;
 use ::graph::audio_buffer::AudioBuffer;
 use ::graph::audio_format::AudioFormat;
-use ::audio_client::{ AudioClient, AudioRenderClient };
+use ::platform::windows::audio_client::AudioClient;
+use ::platform::windows::audio_render_client::AudioRenderClient;
 
 pub struct RenderNode {
     audio_client: AudioClient,

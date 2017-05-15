@@ -4,7 +4,8 @@ use futures::stream::Stream;
 use futures::task;
 use ::graph::audio_buffer::AudioBuffer;
 use ::graph::audio_format::AudioFormat;
-use ::audio_client::{AudioClient, AudioCaptureClient};
+use ::platform::windows::audio_client::AudioClient;
+use ::platform::windows::audio_capture_client::AudioCaptureClient;
 
 pub struct CaptureNode {
     audio_client: AudioClient,

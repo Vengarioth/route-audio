@@ -1,6 +1,7 @@
 use std::io::Error as IoError;
 use ::platform::windows::session::Session;
 use ::platform::windows::device_enumerator::DeviceEnumerator;
+use ::platform::windows::device::Device;
 use ::platform::windows::{ DataFlow, Role, DeviceState };
 
 #[derive(Debug)]
@@ -23,6 +24,10 @@ impl Devices {
             session: session,
             device_enumerator: device_enumerator,
         })
+    }
+
+    pub fn get_device_by_id(&self, device_id: &str) -> Result<Device, IoError> {
+        self.device_enumerator.get_device(device_id)
     }
 
     pub fn get_devices(&self, data_flow: DataFlow) -> Result<Vec<DeviceInformation>, IoError> {

@@ -13,6 +13,7 @@ use ::platform::windows::audio_render_client::AudioRenderClient;
 const REFTIMES_PER_SEC: REFERENCE_TIME = 10000000;
 const REFTIMES_PER_MILLISEC: REFERENCE_TIME = 10000;
 
+#[derive(Debug)]
 pub struct AudioClient {
     pointer: *mut audioclient::IAudioClient,
 }

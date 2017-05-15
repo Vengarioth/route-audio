@@ -1,7 +1,8 @@
 use std::io::Error as IoError;
 use ::platform::windows::{ DataFlow, Role, DeviceState };
 use ::devices::{ Devices, DeviceInformation };
-use ::graph_builder::Graph;
+use ::graph_builder::{ Graph, Node };
+use ::graph::capture_node::CaptureNode;
 
 pub struct Router {
     devices: Devices,
@@ -32,13 +33,14 @@ impl Router {
         self.devices.get_default_device(DataFlow::Render)
     }
 
-    pub fn run(&mut self, graph: Graph) {
+    pub fn run(&mut self, graph: Graph) -> Result<(), IoError> {
         
         for node in &graph.nodes {
             match node {
                 &Node::Capture{ ref id, ref capture_device } => {
-                    let device = self.devices.get_device_by_id(capture_device);
-                    // let capture_node = CaptureNode::new(capture_client).unwrap();
+                    let device = try!(self.devices.get_device_by_id(&capture_device));
+                    let audio_client = try!(device.activate());
+                    let capture_node = try!(CaptureNode::new(audio_client));
                 }
                 &Node::Render{ ref id, ref render_device } => {
                     // let render_node = RenderNode::new(render_client).unwrap();
@@ -49,5 +51,6 @@ impl Router {
             }
         }
 
+        Ok(())
     }
 }

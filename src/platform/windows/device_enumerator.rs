@@ -2,6 +2,9 @@ use std::io::Error as IoError;
 use std::io::ErrorKind;
 use std::mem;
 use std::ptr;
+use std::ffi::OsString;
+use std::os::windows::ffi::OsStrExt;
+use std::os::windows::ffi::OsStringExt;
 use winapi::um::*;
 use winapi::Interface;
 use winapi::shared::wtypes::{PROPERTYKEY};
@@ -12,6 +15,7 @@ use ::platform::windows::device_collection::DeviceCollection;
 use ::platform::windows::{ DataFlow, Role, DeviceState };
 use ::util::check_result;
 
+#[derive(Debug)]
 pub struct DeviceEnumerator {
     pointer: *mut mmdeviceapi::IMMDeviceEnumerator,
 }
@@ -31,6 +35,16 @@ impl DeviceEnumerator {
         Ok(DeviceEnumerator {
             pointer: enumerator,
         })
+    }
+
+    pub fn get_device(&self, device_id: &str) -> Result<Device, IoError> {
+        unsafe {
+            let mut device = mem::uninitialized();
+            let id_str: Vec<u16> = OsString::from(device_id).encode_wide(). chain(Some(0).into_iter()).collect();
+            let id_str = id_str.as_ptr();
+            try!(check_result((*self.pointer).GetDevice(id_str, &mut device)));
+            Ok(Device::new(device))
+        }
     }
 
     pub fn get_default_audio_endpoint(&self, data_flow: DataFlow, role: Role) -> Result<Device, IoError> {

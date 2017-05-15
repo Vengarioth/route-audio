@@ -7,7 +7,6 @@ extern crate tokio_core;
 extern crate sample;
 extern crate ole32;
 
-mod audio_client;
 mod util;
 mod platform;
 mod graph;
